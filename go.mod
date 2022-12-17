@@ -1,4 +1,4 @@
-module github.com/suapapa/vraptor_upload_pic_to_oled
+module github.com/suapapa/vraptor_set_display
 
 go 1.19
 

@@ -30,9 +30,9 @@ func main() {
 	flag.StringVar(&flagDitherMethod, "d", "burkes", "dither mehtods: none, burkes, floydsteinberg, sierra2, sierra3, sierra_lite, stucki, atkinson")
 	flag.Parse()
 
-	vr := newVRaptor(flagURL, flagUser, flagPass)
-	if vr == nil {
-		log.Fatal("failed to create vraptor client")
+	vr, err := newVRaptor(flagURL, flagUser, flagPass)
+	if err != nil {
+		log.Fatalf("failed to create vraptor client: %v", err)
 	}
 
 	imgFN := flag.Arg(0)
@@ -45,12 +45,6 @@ func main() {
 	img, _, err := image.Decode(file)
 	if err != nil {
 		log.Fatal(err)
-	}
-
-	// check dimensions
-	bounds := img.Bounds()
-	if bounds.Dx() != 256 || bounds.Dy() != 64 {
-		log.Fatalf("image size should be 256x64, but got %dx%d", bounds.Dx(), bounds.Dy())
 	}
 
 	img, err = ditherImage(img, flagDitherMethod)

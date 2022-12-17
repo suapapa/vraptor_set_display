@@ -17,15 +17,15 @@ type VRaptor struct {
 	token string
 }
 
-func newVRaptor(url string, user, pass string) *VRaptor {
+func newVRaptor(url string, user, pass string) (*VRaptor, error) {
 	token, err := getToken(url, user, pass)
 	if err != nil {
-		return nil
+		return nil, err
 	}
 	return &VRaptor{
 		url:   url,
 		token: token,
-	}
+	}, nil
 }
 
 func (v *VRaptor) ImageMode(enable bool) error {
@@ -60,6 +60,11 @@ func (v *VRaptor) ImageMode(enable bool) error {
 }
 
 func (v *VRaptor) SetImage(img image.Image) error {
+	bounds := img.Bounds()
+	if bounds.Dx() != 256 || bounds.Dy() != 64 {
+		return fmt.Errorf("image size should be 256x64, but got %dx%d", bounds.Dx(), bounds.Dy())
+	}
+
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
 	part, err := writer.CreateFormFile("file", "image") // image.png
@@ -88,7 +93,7 @@ func (v *VRaptor) SetImage(img image.Image) error {
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
+	if resp.StatusCode != http.StatusAccepted {
 		buf := &bytes.Buffer{}
 		_, err := buf.ReadFrom(resp.Body)
 		if err != nil {
