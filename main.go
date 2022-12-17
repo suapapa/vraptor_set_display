@@ -21,6 +21,7 @@ var (
 	flagUser         string
 	flagPass         string
 	flagDitherMethod string
+	flagTurnOffImage bool
 )
 
 func main() {
@@ -28,11 +29,22 @@ func main() {
 	flag.StringVar(&flagUser, "u", vraptorUser, "vraptor api user")
 	flag.StringVar(&flagPass, "p", vraptorPass, "vraptor api password")
 	flag.StringVar(&flagDitherMethod, "d", "burkes", "dither mehtods: none, burkes, floydsteinberg, sierra2, sierra3, sierra_lite, stucki, atkinson")
+	flag.BoolVar(&flagTurnOffImage, "off", false, "turn off image mode")
 	flag.Parse()
 
 	vr, err := newVRaptor(flagURL, flagUser, flagPass)
 	if err != nil {
 		log.Fatalf("failed to create vraptor client: %v", err)
+	}
+
+	err = vr.ImageMode(!flagTurnOffImage)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if flagTurnOffImage {
+		log.Printf("success to turn off image mode")
+		return
 	}
 
 	imgFN := flag.Arg(0)
@@ -53,11 +65,6 @@ func main() {
 	}
 
 	err = vr.SetImage(img)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	err = vr.ImageMode(true)
 	if err != nil {
 		log.Fatal(err)
 	}
